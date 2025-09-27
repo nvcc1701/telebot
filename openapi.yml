@@ -1,0 +1,184 @@
+openapi: 3.0.3
+info:
+  title: Telegram Bot API
+  description: A simple REST API for sending messages to a Telegram group via a bot
+  version: 2.0.0
+  contact:
+    name: Telegram Bot Service
+servers:
+  - url: http://157.66.219.16/:8686
+    description: dev development server
+
+paths:
+  /health:
+    get:
+      summary: Health check endpoint
+      description: Check if the bot service is running and healthy
+      operationId: getHealth
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+              examples:
+                healthy:
+                  summary: Healthy response
+                  value:
+                    status: "OK"
+                    bot: "running"
+                    timestamp: "2023-12-01T10:30:00.000Z"
+
+  /send-message:
+    get:
+      summary: Send message to Telegram group
+      description: Send a message to the configured Telegram group via GET request
+      operationId: sendMessage
+      parameters:
+        - name: message
+          in: query
+          description: The message text to send (URL encoded if needed)
+          required: true
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 4096
+          examples:
+            simple:
+              summary: Simple text message
+              value: "Hello World"
+            url_encoded:
+              summary: URL encoded message
+              value: "Hello%20World%21"
+      responses:
+        '200':
+          description: Message sent successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+              examples:
+                success:
+                  summary: Successful message send
+                  value:
+                    success: true
+                    message: "Message sent successfully"
+        '400':
+          description: Missing or invalid message parameter
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                missing_message:
+                  summary: Missing message parameter
+                  value:
+                    success: false
+                    error: "Missing message parameter. Use ?message=your_text_here"
+        '500':
+          description: Telegram API error or bot communication failure
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                telegram_error:
+                  summary: Telegram API error
+                  value:
+                    success: false
+                    error: "Bad Request: chat not found"
+
+  /:
+    get:
+      summary: API information
+      description: Get information about available API endpoints and usage instructions
+      operationId: getApiInfo
+      responses:
+        '200':
+          description: API information and documentation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiInfoResponse'
+              examples:
+                api_info:
+                  summary: Complete API documentation
+                  value:
+                    service: "Telegram Bot API"
+                    endpoints:
+                      "GET /health": "Health check"
+                      "GET /send-message?message=your_text": "Send message via GET"
+                    usage: "Replace YOUR_IP_OR_DOMAIN with your server address"
+                    example: "curl http://YOUR_IP_OR_DOMAIN:3000/send-message?message=Hello%20World"
+
+components:
+  schemas:
+    HealthResponse:
+      type: object
+      required:
+        - status
+        - bot
+        - timestamp
+      properties:
+        status:
+          type: string
+          example: "OK"
+        bot:
+          type: string
+          example: "running"
+        timestamp:
+          type: string
+          format: date-time
+          example: "2023-12-01T10:30:00.000Z"
+
+    MessageResponse:
+      type: object
+      required:
+        - success
+        - message
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: "Message sent successfully"
+
+    ErrorResponse:
+      type: object
+      required:
+        - success
+        - error
+      properties:
+        success:
+          type: boolean
+          example: false
+        error:
+          type: string
+          example: "Missing message parameter. Use ?message=your_text_here"
+
+    ApiInfoResponse:
+      type: object
+      required:
+        - service
+        - endpoints
+        - usage
+        - example
+      properties:
+        service:
+          type: string
+          example: "Telegram Bot API"
+        endpoints:
+          type: object
+          additionalProperties:
+            type: string
+          example:
+            "GET /health": "Health check"
+            "GET /send-message?message=your_text": "Send message via GET"
+        usage:
+          type: string
+          example: "Replace YOUR_IP_OR_DOMAIN with your server address"
+        example:
+          type: string
+          example: "curl http://YOUR_IP_OR_DOMAIN:3000/send-message?message=Hello%20World"
