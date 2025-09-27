@@ -59,33 +59,13 @@ app.get('/send-message', async (req, res) => {
   }
 });
 
-// Endpoint to send message via POST (recommended)
-app.post('/send-message', async (req, res) => {
-  const message = req.body.message || req.body.text;
-
-  if (!message) {
-    return res.status(400).json({
-      success: false,
-      error: 'Missing message in request body. Use {"message": "your text here"}'
-    });
-  }
-
-  const result = await sendMessage(message);
-  if (result.success) {
-    res.json(result);
-  } else {
-    res.status(500).json(result);
-  }
-});
-
 // Root endpoint with API info
 app.get('/', (req, res) => {
   res.json({
     service: 'Telegram Bot API',
     endpoints: {
       'GET /health': 'Health check',
-      'GET /send-message?message=your_text': 'Send message via GET',
-      'POST /send-message': 'Send message via POST with {"message": "your_text"}'
+      'GET /send-message?message=your_text': 'Send message via GET'
     },
     usage: 'Replace YOUR_IP_OR_DOMAIN with your server address',
     example: 'curl http://YOUR_IP_OR_DOMAIN:3000/send-message?message=Hello%20World'
